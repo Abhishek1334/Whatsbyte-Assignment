@@ -1,61 +1,131 @@
-import { useState } from 'react';
+"use client";
+
+import { useFilters } from '@/context/FilterContext';
+import products from '@/data/products';
+import { X } from 'lucide-react';
 
 export default function FilterSidebar() {
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [priceRange, setPriceRange] = useState({ min: 0, max: 1000 });
+  const { 
+    filters, 
+    setSelectedCategories, 
+    setSelectedBrands, 
+    setPriceRange,
+    getAvailableCategories,
+    getAvailableBrands
+  } = useFilters();
 
-  const categories = ['All', 'Electronics', 'Clothing', 'Home'];
+  const availableCategories = getAvailableCategories(products);
+  const availableBrands = getAvailableBrands(products);
 
-  const handleCategoryChange = (category: string) => {
-    setSelectedCategory(category);
+  const handleCategoryToggle = (category: string) => {
+    const newCategories = filters.selectedCategories.includes(category)
+      ? filters.selectedCategories.filter(c => c !== category)
+      : [...filters.selectedCategories, category];
+    setSelectedCategories(newCategories);
+  };
+
+  const handleBrandToggle = (brand: string) => {
+    const newBrands = filters.selectedBrands.includes(brand)
+      ? filters.selectedBrands.filter(b => b !== brand)
+      : [...filters.selectedBrands, brand];
+    setSelectedBrands(newBrands);
   };
 
   const handleMinPriceChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(event.target.value);
-    if (value <= priceRange.max) {
-      setPriceRange({ ...priceRange, min: value });
+    if (value <= filters.priceRange.max) {
+      setPriceRange({ ...filters.priceRange, min: value });
     }
   };
 
   const handleMaxPriceChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(event.target.value);
-    if (value >= priceRange.min) {
-      setPriceRange({ ...priceRange, max: value });
+    if (value >= filters.priceRange.min) {
+      setPriceRange({ ...filters.priceRange, max: value });
     }
   };
 
+  const clearAllFilters = () => {
+    setSelectedCategories([]);
+    setSelectedBrands([]);
+    setPriceRange({ min: 0, max: 1000 });
+  };
+
   return (
-    <div className="bg-primary text-text-light p-5 rounded-lg w-70 h-fit">
+    <div className="bg-primary text-text-light p-5 rounded-xl w-70 h-fit">
       {/* Header */}
-      <h2 className="text-2xl font-bold mb-4">Filters</h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-2xl font-bold">Filters</h2>
+        {(filters.selectedCategories.length > 0 || filters.selectedBrands.length > 0) && (
+          <button
+            onClick={clearAllFilters}
+            className="text-sm text-text-light hover:text-gray-300 flex items-center gap-1"
+          >
+            <X size={16} />
+            Clear All
+          </button>
+        )}
+      </div>
       
       {/* Category Section */}
       <div className="mb-6">
-        <h3 className="text-xl font-semibold mb-1">Category</h3>
+        <h3 className="text-lg font-semibold mb-3">Category</h3>
         <div className="space-y-2">
-          {categories.map((category) => (
+          {availableCategories.map((category) => (
             <label 
               key={category}
               className="flex items-center cursor-pointer"
             >
               <div className="relative">
                 <input
-                  type="radio"
-                  name="category"
-                  value={category}
-                  checked={selectedCategory === category}
-                  onChange={() => handleCategoryChange(category)}
+                  type="checkbox"
+                  checked={filters.selectedCategories.includes(category)}
+                  onChange={() => handleCategoryToggle(category)}
                   className="sr-only"
                 />
-                <div className={`w-5 h-5 rounded-full border-1 border-white flex items-center justify-center ${
-                  selectedCategory === category ? 'border-3' : 'bg-transparent'
+                <div className={`w-5 h-5 rounded-full border-2 border-white flex items-center justify-center ${
+                  filters.selectedCategories.includes(category) ? 'bg-white' : 'bg-transparent'
                 }`}>
-                  {selectedCategory === category && (
-                    <div className="w-2 h-2 rounded-full bg-primary"></div>
+                  {filters.selectedCategories.includes(category) && (
+                    <div className="w-3 h-3 bg-primary rounded-full"></div>
                   )}
                 </div>
               </div>
-              <span className={`ml-3 text-lg ${selectedCategory === category ? 'font-semibold' : 'font-light'}`}>{category}</span>
+              <span className={`ml-3  ${filters.selectedCategories.includes(category) ? 'font-semibold' : 'font-light'}`}>
+                {category}
+              </span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {/* Brand Section */}
+      <div className="mb-6 ">
+        <h3 className="text-lg font-semibold mb-3">Brand</h3>
+        <div className="space-y-2">
+          {availableBrands.map((brand) => (
+            <label 
+              key={brand}
+              className="flex items-center cursor-pointer"
+            >
+              <div className="relative">
+                <input
+                  type="checkbox"
+                  checked={filters.selectedBrands.includes(brand)}
+                  onChange={() => handleBrandToggle(brand)}
+                  className="sr-only"
+                />
+                <div className={`w-5 h-5 rounded-full border-2 border-white flex items-center justify-center ${
+                  filters.selectedBrands.includes(brand) ? 'bg-white' : 'bg-transparent'
+                }`}>
+                  {filters.selectedBrands.includes(brand) && (
+                    <div className="w-3 h-3 bg-primary rounded-full"></div>
+                  )}
+                </div>
+              </div>
+              <span className={`ml-3  ${filters.selectedBrands.includes(brand) ? 'font-semibold' : 'font-light'}`}>
+                {brand}
+              </span>
             </label>
           ))}
         </div>
@@ -63,7 +133,7 @@ export default function FilterSidebar() {
 
       {/* Price Section */}
       <div>
-        <h3 className="text-xl font-semibold mb-4">Price</h3>
+        <h3 className="text-lg font-semibold mb-4">Price</h3>
         <div className="space-y-4">
           {/* Dual Range Slider */}
           <div className="relative h-6">
@@ -73,8 +143,8 @@ export default function FilterSidebar() {
               <div 
                 className="absolute h-2 bg-white rounded-lg"
                 style={{
-                  left: `${(priceRange.min / 1000) * 100}%`,
-                  width: `${((priceRange.max - priceRange.min) / 1000) * 100}%`
+                  left: `${(filters.priceRange.min / 1000) * 100}%`,
+                  width: `${((filters.priceRange.max - filters.priceRange.min) / 1000) * 100}%`
                 }}
               />
             </div>
@@ -84,10 +154,10 @@ export default function FilterSidebar() {
               type="range"
               min="0"
               max="1000"
-              value={priceRange.min}
+              value={filters.priceRange.min}
               onChange={handleMinPriceChange}
               className="absolute top-0 w-full h-6 appearance-none cursor-pointer slider-min bg-transparent pointer-events-auto"
-              style={{ zIndex: priceRange.min > priceRange.max - 100 ? 5 : 1 }}
+              style={{ zIndex: filters.priceRange.min > filters.priceRange.max - 100 ? 5 : 1 }}
             />
             
             {/* Max Range Input */}
@@ -95,10 +165,10 @@ export default function FilterSidebar() {
               type="range"
               min="0"
               max="1000"
-              value={priceRange.max}
+              value={filters.priceRange.max}
               onChange={handleMaxPriceChange}
               className="absolute top-0 w-full h-6 appearance-none cursor-pointer slider-max bg-transparent pointer-events-auto"
-              style={{ zIndex: priceRange.min > priceRange.max - 100 ? 1 : 5 }}
+              style={{ zIndex: filters.priceRange.min > filters.priceRange.max - 100 ? 1 : 5 }}
             />
             
             <style jsx>{`
@@ -153,9 +223,9 @@ export default function FilterSidebar() {
           </div>
           
           {/* Price Range Display */}
-          <div className="flex justify-between text-lg mt-2">
-            <span>{priceRange.min}</span>
-            <span>{priceRange.max}</span>
+          <div className="flex justify-between mt-2">
+            <span>${filters.priceRange.min}</span>
+            <span>${filters.priceRange.max}</span>
           </div>
         </div>
       </div>

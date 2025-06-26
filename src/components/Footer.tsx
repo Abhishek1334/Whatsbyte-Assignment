@@ -4,7 +4,7 @@ import { FaInstagram } from "react-icons/fa";
 
 export default function Footer() {
   return (
-    <footer className="bg-secondary text-white py-10 px-100 grid grid-cols-3 gap-4">
+    <footer className="bg-secondary text-white pt-10 px-100 grid grid-cols-3 gap-4  pb-4">
       <div>
         <h3 className="font-semibold text-xl mb-2">Filters</h3>
         <ul className="grid grid-cols-2 gap-2 max-w-48  text-text-light font-light">
@@ -28,7 +28,9 @@ export default function Footer() {
           <IoLogoTwitter className="w-8 h-8 p-1 bg-primary rounded-full" />
           <FaInstagram className="w-8 h-8 p-1 bg-primary rounded-full" />
         </div>
+        
       </div>
+      <div className="text-text-light font-light pt-10" >&copy; 2025 Whatsbyte. All rights reserved.</div>
     </footer>
   );
 }
