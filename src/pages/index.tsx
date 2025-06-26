@@ -2,8 +2,10 @@ import type { ReactElement } from 'react';
 
 export default function Home(): ReactElement {
   return (
-    <div className="min-h-screen bg-white">
-      {/* This is a completely blank page */}
+    <div className="min-h-screen bg-surface">
+      <div className="container mx-auto py-8">
+        
+      </div>
     </div>
   );
 }

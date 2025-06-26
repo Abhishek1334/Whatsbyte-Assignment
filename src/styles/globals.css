@@ -1,6 +1,15 @@
 @import "tailwindcss";
 
-:root {
+/* Tailwind CSS v4 Custom Theme */
+@theme {
+  --color-primary: #0758A8;
+  --color-secondary: #002A59;
+  --color-accent: #365983;
+  --color-surface: #FEFEFE;
+  --color-text-light: #FAFDFE;
+  --color-text-dark: #031F45;
+  
+  /* Additional CSS variables for legacy support */
   --background: #ffffff;
   --foreground: #171717;
 }
@@ -10,13 +19,6 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
