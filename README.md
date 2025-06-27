@@ -4,7 +4,10 @@ A modern, responsive e-commerce application built with Next.js, TypeScript, and 
 
 ## 🚀 Live Demo
 
-**🔗 Deployment URL:** [Coming Soon - Deploy to Vercel]
+**🔗 Deployment URL: https://whatsbyte-assignment-pied.vercel.app/ **
+
+### [Portfolio](https://abhishek-rajoria.vercel.app/) | [Github](http://github.com/Abhishek1334/) | [Resume](https://drive.google.com/file/d/1UchzGFtq72KDwOsg8af5W2NKQDvoRi-J/view?usp=sharing)
+
 
 ## ✨ Features
 
