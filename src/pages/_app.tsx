@@ -1,16 +1,20 @@
 import type { AppProps } from 'next/app';
-import Layout from "@/components/Layout";
-import { FilterProvider } from "@/context/FilterContext";
-import "@/styles/globals.css";
+import { FilterProvider } from '@/context/FilterContext';
+import { CartProvider } from '@/context/CartContext';
+import { ToastProvider } from '@/context/ToastContext';
+import Layout from '@/components/Layout';
+import '@/styles/globals.css';
 
-function MyApp({ Component, pageProps }: AppProps) {
+export default function App({ Component, pageProps }: AppProps) {
   return (
-    <FilterProvider>
-      <Layout>
-        <Component {...pageProps} />
-      </Layout>
-    </FilterProvider>
+    <ToastProvider>
+      <CartProvider>
+        <FilterProvider>
+          <Layout>
+            <Component {...pageProps} />
+          </Layout>
+        </FilterProvider>
+      </CartProvider>
+    </ToastProvider>
   );
 }
-
-export default MyApp;
