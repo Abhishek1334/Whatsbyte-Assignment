@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router';
-import { ArrowLeft, Home, Search } from 'lucide-react';
+import { ArrowLeft, Home } from 'lucide-react';
 
 export default function Custom404() {
   const router = useRouter();
@@ -47,38 +47,7 @@ export default function Custom404() {
           </button>
         </div>
 
-        {/* Help Section */}
-        <div className="border-t border-gray-200 pt-8">
-          <h3 className="text-lg font-semibold text-text-dark mb-4">
-            What can you do?
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-            <div className="bg-white p-4 rounded-lg border border-gray-100">
-              <div className="flex items-center gap-2 mb-2">
-                <Search size={16} className="text-primary" />
-                <span className="font-medium">Search Products</span>
-              </div>
-              <p className="text-gray-600">
-                Use the search bar to find specific products
-              </p>
-            </div>
-            
-            <div className="bg-white p-4 rounded-lg border border-gray-100">
-              <div className="flex items-center gap-2 mb-2">
-                <Home size={16} className="text-primary" />
-                <span className="font-medium">Browse Categories</span>
-              </div>
-              <p className="text-gray-600">
-                Explore our product categories on the homepage
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Footer Note */}
-        <div className="mt-8 text-sm text-gray-500">
-          If you believe this is an error, please contact our support team.
-        </div>
+       
       </div>
     </div>
   );

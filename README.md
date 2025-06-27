@@ -124,35 +124,6 @@ src/
 - **Screen Reader Support**: Comprehensive screen reader compatibility
 - **Focus Management**: Proper focus indicators and tab order
 
-## 🚀 Deployment
-
-This project is optimized for deployment on Vercel:
-
-1. **Push to GitHub** (completed)
-2. **Connect to Vercel**
-3. **Deploy with one click**
-
-The project includes:
-- ✅ Production build optimization
-- ✅ Environment variable support
-- ✅ Automatic deployments on push
-
-## 📱 Browser Support
-
-- ✅ Chrome (latest)
-- ✅ Firefox (latest)
-- ✅ Safari (latest)
-- ✅ Edge (latest)
-- ✅ Mobile browsers (iOS Safari, Chrome Mobile)
-
-## 🔧 Build Commands
-
-```bash
-npm run dev      # Development server
-npm run build    # Production build
-npm run start    # Production server
-npm run lint     # ESLint checking
-```
 
 ## 🎨 Design System
 
@@ -178,14 +149,5 @@ This project follows modern React and Next.js best practices:
 - **Progressive Enhancement**: Works without JavaScript, enhanced with it
 - **Git Workflow**: Feature-based commits with clear history
 
-## 🤝 Contributing
-
-This is an assignment project. For questions or suggestions, please reach out!
-
-## 📄 License
-
-This project is for educational/assignment purposes.
-
----
 
 **Built with ❤️ using Next.js, TypeScript, and Tailwind CSS**

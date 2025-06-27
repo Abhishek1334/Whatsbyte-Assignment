@@ -1,69 +1,9 @@
 "use client";
 
+import { useState, useEffect } from 'react';
 import { useFilters } from '@/context/FilterContext';
+import { Filter, X, RotateCcw } from 'lucide-react';
 import products from '@/data/products';
-import { X, Filter, RotateCcw } from 'lucide-react';
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-
-const modalVariants = {
-  hidden: {
-    opacity: 0,
-    scale: 0.95,
-    y: 20
-  },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    y: 0,
-    transition: {
-      duration: 0.3,
-      ease: "easeOut" as const
-    }
-  },
-  exit: {
-    opacity: 0,
-    scale: 0.95,
-    y: 20,
-    transition: {
-      duration: 0.2,
-      ease: "easeIn" as const
-    }
-  }
-};
-
-const backdropVariants = {
-  hidden: {
-    opacity: 0
-  },
-  visible: {
-    opacity: 1,
-    transition: {
-      duration: 0.3
-    }
-  },
-  exit: {
-    opacity: 0,
-    transition: {
-      duration: 0.2
-    }
-  }
-};
-
-const filterButtonVariants = {
-  initial: {
-    scale: 1
-  },
-  hover: {
-    scale: 1.05,
-    transition: {
-      duration: 0.2
-    }
-  },
-  tap: {
-    scale: 0.95
-  }
-};
 
 export default function FilterSidebar() {
   const { 
@@ -71,13 +11,36 @@ export default function FilterSidebar() {
     setSelectedCategories, 
     setSelectedBrands, 
     setPriceRange,
-    getAvailableCategories,
+    getAvailableCategories, 
     getAvailableBrands,
-    clearAllFilters
+    clearAllFilters 
   } = useFilters();
 
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   
+  // Local state for price range to enable smooth dragging
+  const [localPriceRange, setLocalPriceRange] = useState(filters.priceRange);
+  const [isDragging, setIsDragging] = useState(false);
+
+  // Update local state when filters change externally
+  useEffect(() => {
+    if (!isDragging) {
+      setLocalPriceRange(filters.priceRange);
+    }
+  }, [filters.priceRange, isDragging]);
+
+  // Debounce function to update filters after user stops dragging
+  useEffect(() => {
+    if (isDragging) {
+      const timer = setTimeout(() => {
+        setPriceRange(localPriceRange);
+        setIsDragging(false);
+      }, 300); // 300ms delay after user stops dragging
+
+      return () => clearTimeout(timer);
+    }
+  }, [localPriceRange, isDragging, setPriceRange]);
+
   const availableCategories = getAvailableCategories(products);
   const availableBrands = getAvailableBrands(products);
 
@@ -97,16 +60,24 @@ export default function FilterSidebar() {
 
   const handleMinPriceChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(event.target.value);
-    if (value <= filters.priceRange.max) {
-      setPriceRange({ ...filters.priceRange, min: value });
+    if (value <= localPriceRange.max) {
+      setLocalPriceRange({ ...localPriceRange, min: value });
+      setIsDragging(true);
     }
   };
 
   const handleMaxPriceChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(event.target.value);
-    if (value >= filters.priceRange.min) {
-      setPriceRange({ ...filters.priceRange, max: value });
+    if (value >= localPriceRange.min) {
+      setLocalPriceRange({ ...localPriceRange, max: value });
+      setIsDragging(true);
     }
+  };
+
+  const handlePriceInputEnd = () => {
+    // Immediately apply the filter when user releases the slider
+    setPriceRange(localPriceRange);
+    setIsDragging(false);
   };
 
   const FilterContent = () => (
@@ -116,45 +87,32 @@ export default function FilterSidebar() {
         <h2 className="text-xl md:text-2xl font-bold">Filters</h2>
         <div className="flex items-center gap-2">
           {(filters.selectedCategories.length > 0 || filters.selectedBrands.length > 0 || filters.priceRange.min > 0 || filters.priceRange.max < 1000) && (
-            <motion.button
+            <button
               onClick={clearAllFilters}
-              className="text-sm text-text-light hover:text-gray-300 flex items-center gap-1"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              className="text-sm text-text-light hover:text-gray-300 flex items-center gap-1 transition-colors"
             >
               <RotateCcw size={16} />
               <span className="hidden sm:inline">Clear All</span>
-            </motion.button>
+            </button>
           )}
           {/* Mobile Close Button */}
-          <motion.button
+          <button
             onClick={() => setIsMobileFiltersOpen(false)}
-            className="lg:hidden text-text-light hover:text-gray-300"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
+            className="lg:hidden text-text-light hover:text-gray-300 transition-colors"
           >
             <X size={20} />
-          </motion.button>
+          </button>
         </div>
       </div>
       
       {/* Category Section */}
-      <motion.div 
-        className="mb-6"
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1, duration: 0.3 }}
-      >
+      <div className="mb-6">
         <h3 className="text-lg font-semibold mb-3">Category</h3>
         <div className="space-y-2">
-          {availableCategories.map((category, index) => (
-            <motion.label 
+          {availableCategories.map((category) => (
+            <label 
               key={category}
-              className="flex items-center cursor-pointer"
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.1 + index * 0.05, duration: 0.3 }}
-              whileHover={{ x: 5 }}
+              className="flex items-center cursor-pointer hover:translate-x-1 transition-transform"
             >
               <div className="relative">
                 <input
@@ -163,47 +121,32 @@ export default function FilterSidebar() {
                   onChange={() => handleCategoryToggle(category)}
                   className="sr-only"
                 />
-                <motion.div 
-                  className={`w-5 h-5 rounded-full border-2 border-white flex items-center justify-center ${
+                <div 
+                  className={`w-5 h-5 rounded-full border-2 border-white flex items-center justify-center transition-colors ${
                     filters.selectedCategories.includes(category) ? 'bg-white' : 'bg-transparent'
                   }`}
-                  whileTap={{ scale: 0.9 }}
                 >
                   {filters.selectedCategories.includes(category) && (
-                    <motion.div 
-                      className="w-3 h-3 bg-primary rounded-full"
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ duration: 0.2 }}
-                    />
+                    <div className="w-3 h-3 bg-primary rounded-full" />
                   )}
-                </motion.div>
+                </div>
               </div>
               <span className={`ml-3 ${filters.selectedCategories.includes(category) ? 'font-semibold' : 'font-light'}`}>
                 {category}
               </span>
-            </motion.label>
+            </label>
           ))}
         </div>
-      </motion.div>
+      </div>
 
       {/* Brand Section */}
-      <motion.div 
-        className="mb-6"
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2, duration: 0.3 }}
-      >
+      <div className="mb-6">
         <h3 className="text-lg font-semibold mb-3">Brand</h3>
         <div className="space-y-2">
-          {availableBrands.map((brand, index) => (
-            <motion.label 
+          {availableBrands.map((brand) => (
+            <label 
               key={brand}
-              className="flex items-center cursor-pointer"
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 + index * 0.05, duration: 0.3 }}
-              whileHover={{ x: 5 }}
+              className="flex items-center cursor-pointer hover:translate-x-1 transition-transform"
             >
               <div className="relative">
                 <input
@@ -212,51 +155,39 @@ export default function FilterSidebar() {
                   onChange={() => handleBrandToggle(brand)}
                   className="sr-only"
                 />
-                <motion.div 
-                  className={`w-5 h-5 rounded-full border-2 border-white flex items-center justify-center ${
+                <div 
+                  className={`w-5 h-5 rounded-full border-2 border-white flex items-center justify-center transition-colors ${
                     filters.selectedBrands.includes(brand) ? 'bg-white' : 'bg-transparent'
                   }`}
-                  whileTap={{ scale: 0.9 }}
                 >
                   {filters.selectedBrands.includes(brand) && (
-                    <motion.div 
-                      className="w-3 h-3 bg-primary rounded-full"
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ duration: 0.2 }}
-                    />
+                    <div className="w-3 h-3 bg-primary rounded-full" />
                   )}
-                </motion.div>
+                </div>
               </div>
               <span className={`ml-3 ${filters.selectedBrands.includes(brand) ? 'font-semibold' : 'font-light'}`}>
                 {brand}
               </span>
-            </motion.label>
+            </label>
           ))}
         </div>
-      </motion.div>
+      </div>
 
       {/* Price Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3, duration: 0.3 }}
-      >
+      <div>
         <h3 className="text-lg font-semibold mb-4">Price</h3>
         <div className="space-y-4">
           {/* Dual Range Slider */}
-          <div className="relative h-6">
+          <div className="relative px-2">
             {/* Background track */}
-            <div className="absolute top-2 w-full h-2 bg-blue-300 rounded-lg">
+            <div className="relative h-2 bg-blue-300 rounded-full">
               {/* Active range highlight */}
-              <motion.div 
-                className="absolute h-2 bg-white rounded-lg"
+              <div 
+                className="absolute h-2 bg-white rounded-full"
                 style={{
-                  left: `${(filters.priceRange.min / 1000) * 100}%`,
-                  width: `${((filters.priceRange.max - filters.priceRange.min) / 1000) * 100}%`
+                  left: `${(localPriceRange.min / 1000) * 100}%`,
+                  width: `${((localPriceRange.max - localPriceRange.min) / 1000) * 100}%`
                 }}
-                layout
-                transition={{ duration: 0.2 }}
               />
             </div>
             
@@ -265,10 +196,16 @@ export default function FilterSidebar() {
               type="range"
               min="0"
               max="1000"
-              value={filters.priceRange.min}
+              step="10"
+              value={localPriceRange.min}
               onChange={handleMinPriceChange}
-              className="absolute top-0 w-full h-6 appearance-none cursor-pointer slider-min bg-transparent pointer-events-auto"
-              style={{ zIndex: filters.priceRange.min > filters.priceRange.max - 100 ? 5 : 1 }}
+              onMouseUp={handlePriceInputEnd}
+              onTouchEnd={handlePriceInputEnd}
+              className="absolute top-0 w-full h-2 bg-transparent cursor-pointer range-input"
+              style={{ 
+                zIndex: localPriceRange.min > localPriceRange.max - 100 ? 3 : 1,
+                pointerEvents: 'all'
+              }}
             />
             
             {/* Max Range Input */}
@@ -276,42 +213,83 @@ export default function FilterSidebar() {
               type="range"
               min="0"
               max="1000"
-              value={filters.priceRange.max}
+              step="10"
+              value={localPriceRange.max}
               onChange={handleMaxPriceChange}
-              className="absolute top-0 w-full h-6 appearance-none cursor-pointer slider-max bg-transparent pointer-events-auto"
-              style={{ zIndex: filters.priceRange.min > filters.priceRange.max - 100 ? 1 : 5 }}
+              onMouseUp={handlePriceInputEnd}
+              onTouchEnd={handlePriceInputEnd}
+              className="absolute top-0 w-full h-2 bg-transparent cursor-pointer range-input"
+              style={{ 
+                zIndex: localPriceRange.min > localPriceRange.max - 100 ? 1 : 3,
+                pointerEvents: 'all'
+              }}
             />
           </div>
           
-          <div className="flex justify-between text-sm">
-            <span>${filters.priceRange.min}</span>
-            <span>${filters.priceRange.max}</span>
+          <div className="flex justify-between text-sm mt-4">
+            <span>${localPriceRange.min}</span>
+            <span>${localPriceRange.max}</span>
           </div>
         </div>
-      </motion.div>
+      </div>
 
       <style jsx>{`
-        .slider-min::-webkit-slider-thumb,
-        .slider-max::-webkit-slider-thumb {
+        .range-input {
+          -webkit-appearance: none;
+          appearance: none;
+          background: transparent;
+          outline: none;
+        }
+        
+        .range-input::-webkit-slider-track {
+          background: transparent;
+          height: 8px;
+        }
+        
+        .range-input::-webkit-slider-thumb {
+          -webkit-appearance: none;
           appearance: none;
           height: 20px;
           width: 20px;
           border-radius: 50%;
           background: white;
           cursor: pointer;
+          border: 3px solid #0758A8;
           box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-          border: 2px solid #0758A8;
-          pointer-events: all;
+          margin-top: -9px;
         }
-        .slider-min::-moz-range-thumb,
-        .slider-max::-moz-range-thumb {
+        
+        .range-input::-webkit-slider-thumb:hover {
+          box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+        }
+        
+        .range-input::-webkit-slider-thumb:active {
+          box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+        }
+        
+        /* Firefox */
+        .range-input::-moz-range-track {
+          background: transparent;
+          height: 8px;
+          border: none;
+        }
+        
+        .range-input::-moz-range-thumb {
           height: 20px;
           width: 20px;
           border-radius: 50%;
           background: white;
           cursor: pointer;
-          border: 2px solid #0758A8;
-          pointer-events: all;
+          border: 3px solid #0758A8;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .range-input::-moz-range-thumb:hover {
+          box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+        }
+        
+        .range-input::-moz-range-thumb:active {
+          box-shadow: 0 4px 8px rgba(0,0,0,0.4);
         }
       `}</style>
     </div>
@@ -321,63 +299,35 @@ export default function FilterSidebar() {
     <>
       {/* Mobile Filter Toggle Button */}
       <div className="lg:hidden mb-4">
-        <motion.button
+        <button
           onClick={() => setIsMobileFiltersOpen(true)}
-          className="flex items-center gap-2 bg-primary text-text-light px-4 py-2 rounded-lg hover:bg-blue-900 transition"
-          variants={filterButtonVariants}
-          initial="initial"
-          whileHover="hover"
-          whileTap="tap"
+          className="flex items-center gap-2 bg-primary text-text-light px-4 py-2 rounded-lg hover:bg-blue-900 transition-colors"
         >
           <Filter size={20} />
           <span>Filters</span>
           {(filters.selectedCategories.length > 0 || filters.selectedBrands.length > 0 || filters.priceRange.min > 0 || filters.priceRange.max < 1000) && (
-            <motion.span 
-              className="bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center"
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: "spring", stiffness: 500, damping: 30 }}
-            >
+            <span className="bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
               {filters.selectedCategories.length + filters.selectedBrands.length + (filters.priceRange.min > 0 ? 1 : 0) + (filters.priceRange.max < 1000 ? 1 : 0)}
-            </motion.span>
+            </span>
           )}
-        </motion.button>
+        </button>
       </div>
 
       {/* Desktop Filter Sidebar */}
-      <motion.div 
-        className="hidden lg:block"
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.5, ease: "easeOut" as const }}
-      >
+      <div className="hidden lg:block">
         <FilterContent />
-      </motion.div>
+      </div>
 
       {/* Mobile Filter Modal */}
-      <AnimatePresence>
-        {isMobileFiltersOpen && (
-          <motion.div 
-            className="lg:hidden fixed inset-0 z-50 backdrop-blur-sm flex items-start justify-center p-4 pt-8"
-            variants={backdropVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-          >
-            <motion.div 
-              className="bg-white rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200"
-              variants={modalVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-            >
-              <div className="text-text-dark">
-                <FilterContent />
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {isMobileFiltersOpen && (
+        <div className="lg:hidden fixed inset-0 z-50 backdrop-blur-sm flex items-start justify-center p-4 pt-8">
+          <div className="bg-white rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200">
+            <div className="text-text-dark">
+              <FilterContent />
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 } 
