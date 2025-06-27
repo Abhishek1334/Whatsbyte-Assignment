@@ -14,6 +14,7 @@ export default function Home(): ReactElement {
           
           {/* Product Grid - Takes remaining space */}
           <div className="flex-1 min-w-0">
+            <div className="text-2xl font-bold text-text-dark mb-4">Product Listing</div>
             <ProductGrid />
           </div>
         </div>

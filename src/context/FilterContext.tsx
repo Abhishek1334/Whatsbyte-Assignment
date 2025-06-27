@@ -66,7 +66,7 @@ export const FilterProvider = ({ children }: FilterProviderProps) => {
 
   // Update URL when filters change
   const updateURL = (newFilters: FilterState) => {
-    const query: any = {};
+    const query: Record<string, string | string[]> = {};
     
     if (newFilters.searchQuery) query.search = newFilters.searchQuery;
     if (newFilters.selectedCategories.length > 0) query.category = newFilters.selectedCategories;
