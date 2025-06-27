@@ -1,6 +1,7 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useRouter } from 'next/router';
 import { Product } from '@/types';
 
 interface FilterState {
@@ -19,6 +20,7 @@ interface FilterContextType {
   getFilteredProducts: (products: Product[]) => Product[];
   getAvailableCategories: (products: Product[]) => string[];
   getAvailableBrands: (products: Product[]) => string[];
+  clearAllFilters: () => void;
 }
 
 const FilterContext = createContext<FilterContextType | undefined>(undefined);
@@ -36,6 +38,7 @@ interface FilterProviderProps {
 }
 
 export const FilterProvider = ({ children }: FilterProviderProps) => {
+  const router = useRouter();
   const [filters, setFilters] = useState<FilterState>({
     searchQuery: '',
     selectedCategories: [],
@@ -43,20 +46,73 @@ export const FilterProvider = ({ children }: FilterProviderProps) => {
     priceRange: { min: 0, max: 1000 }
   });
 
+  // Initialize filters from URL on component mount
+  useEffect(() => {
+    if (router.isReady) {
+      const { search, category, brand, minPrice, maxPrice } = router.query;
+      
+      setFilters(prev => ({
+        ...prev,
+        searchQuery: (search as string) || '',
+        selectedCategories: category ? (Array.isArray(category) ? category : [category]) : [],
+        selectedBrands: brand ? (Array.isArray(brand) ? brand : [brand]) : [],
+        priceRange: {
+          min: minPrice ? parseInt(minPrice as string) : 0,
+          max: maxPrice ? parseInt(maxPrice as string) : 1000
+        }
+      }));
+    }
+  }, [router.isReady, router.query]);
+
+  // Update URL when filters change
+  const updateURL = (newFilters: FilterState) => {
+    const query: any = {};
+    
+    if (newFilters.searchQuery) query.search = newFilters.searchQuery;
+    if (newFilters.selectedCategories.length > 0) query.category = newFilters.selectedCategories;
+    if (newFilters.selectedBrands.length > 0) query.brand = newFilters.selectedBrands;
+    if (newFilters.priceRange.min > 0) query.minPrice = newFilters.priceRange.min.toString();
+    if (newFilters.priceRange.max < 1000) query.maxPrice = newFilters.priceRange.max.toString();
+
+    router.push({
+      pathname: router.pathname,
+      query
+    }, undefined, { shallow: true });
+  };
+
   const setSearchQuery = (query: string) => {
-    setFilters(prev => ({ ...prev, searchQuery: query }));
+    const newFilters = { ...filters, searchQuery: query };
+    setFilters(newFilters);
+    updateURL(newFilters);
   };
 
   const setSelectedCategories = (categories: string[]) => {
-    setFilters(prev => ({ ...prev, selectedCategories: categories }));
+    const newFilters = { ...filters, selectedCategories: categories };
+    setFilters(newFilters);
+    updateURL(newFilters);
   };
 
   const setSelectedBrands = (brands: string[]) => {
-    setFilters(prev => ({ ...prev, selectedBrands: brands }));
+    const newFilters = { ...filters, selectedBrands: brands };
+    setFilters(newFilters);
+    updateURL(newFilters);
   };
 
   const setPriceRange = (range: { min: number; max: number }) => {
-    setFilters(prev => ({ ...prev, priceRange: range }));
+    const newFilters = { ...filters, priceRange: range };
+    setFilters(newFilters);
+    updateURL(newFilters);
+  };
+
+  const clearAllFilters = () => {
+    const newFilters = {
+      searchQuery: '',
+      selectedCategories: [],
+      selectedBrands: [],
+      priceRange: { min: 0, max: 1000 }
+    };
+    setFilters(newFilters);
+    updateURL(newFilters);
   };
 
   const getAvailableCategories = (products: Product[]): string[] => {
@@ -72,8 +128,11 @@ export const FilterProvider = ({ children }: FilterProviderProps) => {
   const getFilteredProducts = (products: Product[]): Product[] => {
     return products.filter(product => {
       // Search filter
-      const matchesSearch = product.title.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
-                           product.description.toLowerCase().includes(filters.searchQuery.toLowerCase());
+      const matchesSearch = !filters.searchQuery || 
+        product.title.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
+        product.description.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
+        product.brand.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
+        product.category.toLowerCase().includes(filters.searchQuery.toLowerCase());
 
       // Category filter
       const matchesCategory = filters.selectedCategories.length === 0 || filters.selectedCategories.includes(product.category);
@@ -97,7 +156,8 @@ export const FilterProvider = ({ children }: FilterProviderProps) => {
       setPriceRange,
       getFilteredProducts,
       getAvailableCategories,
-      getAvailableBrands
+      getAvailableBrands,
+      clearAllFilters
     }}>
       {children}
     </FilterContext.Provider>
