@@ -8,6 +8,8 @@ A modern, responsive e-commerce application built with Next.js, TypeScript, and 
 
 ### [Portfolio](https://abhishek-rajoria.vercel.app/) | [Github](http://github.com/Abhishek1334/) | [Resume](https://drive.google.com/file/d/1UchzGFtq72KDwOsg8af5W2NKQDvoRi-J/view?usp=sharing)
 
+## Video Walkthrough
+[Google Drive](https://drive.google.com/file/d/1qGmvmVtf9eierKBQcIr1hK4PGHpTZkxu/view?usp=sharing)
 
 ## ✨ Features
 
